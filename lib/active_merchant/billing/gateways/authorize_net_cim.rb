@@ -313,6 +313,7 @@ module ActiveMerchant #:nodoc:
       # * <tt>:amount</tt> -- The amount for the tranaction. Formatted with a decimal. For example "4.95" (REQUIRED)
       # * <tt>:customer_profile_id</tt> -- The Customer Profile ID of the customer to use in this transaction. (REQUIRED)
       # * <tt>:customer_payment_profile_id</tt> -- The Customer Payment Profile ID of the Customer Payment Profile to use in this transaction. (REQUIRED)
+      # * <tt>:extra_options</tt> -- Extra options may be provided to Authorize.net which are specific to the transaction.  See the list of the transaction data fields that can be submitted using the transaction request string at http://www.authorize.net/support/AIM_guide.pdf pages 16-26.
       def create_customer_profile_transaction(options)
         requires!(options, :transaction)
         requires!(options[:transaction], :type, :amount, :customer_profile_id, :customer_payment_profile_id)
@@ -357,6 +358,11 @@ module ActiveMerchant #:nodoc:
           # Merchant-assigned reference ID for the request
           xml.tag!('refId', options[:ref_id]) if options[:ref_id]
           send("build_#{action}_request", xml, options)
+          if options[:extra_options]
+            xml.tag!('extraOptions') do
+              xml.cdata!(options[:extra_options])
+            end
+          end
         end
       end
 
