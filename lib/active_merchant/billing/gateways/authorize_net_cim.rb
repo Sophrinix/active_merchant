@@ -638,19 +638,27 @@ module ActiveMerchant #:nodoc:
         message = response_params['messages']['message']['text']
         test_mode = test? || message =~ /Test Mode/
         success = response_params['messages']['result_code'] == 'Ok'
+        
+        auth = nil
+        direct_response = response_params['direct_response'] ? parse_direct_response(response_params) : nil
+        if action == :create_customer_profile_transaction
+          auth = direct_response['transaction_id'] if direct_response
+        else
+          auth = response_params['customer_profile_id'] || (response_params['profile'] ? response_params['profile']['customer_profile_id'] : nil)
+        end
 
         response = Response.new(success, message, response_params,
           :test => test_mode,
-          :authorization => response_params['customer_profile_id'] || (response_params['profile'] ? response_params['profile']['customer_profile_id'] : nil)
+          :authorization => auth
         )
         
-        response.params['direct_response'] = parse_direct_response(response) if response.params['direct_response']
+        response.params['direct_response'] = direct_response
         response
       end
       
-      def parse_direct_response(response)
-        direct_response = {'raw' => response.params['direct_response']}
-        direct_response_fields = response.params['direct_response'].split(',')
+      def parse_direct_response(params)
+        direct_response = {'raw' => params['direct_response']}
+        direct_response_fields = params['direct_response'].split(',')
 
         direct_response.merge(
           {
