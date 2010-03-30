@@ -348,6 +348,8 @@ module ActiveMerchant #:nodoc:
       #     - :type = (:auth_only, :capture_only, :auth_capture) (NOT USED)
       #     - :type = (:prior_auth_capture) (OPTIONAL)
       #
+      # * <tt>:extra_options</tt> -- Extra options may be provided to Authorize.net which are specific to the transaction.  See the list of the transaction data fields that can be submitted using the transaction request string at http://www.authorize.net/support/AIM_guide.pdf pages 16-26.
+      #
       # ==== For :type == :refund only
       # * <tt>:credit_card_number_masked</tt> -- (CONDITIONAL - requied for credit card refunds is :customer_profile_id AND :customer_payment_profile_id are missing)
       # * <tt>:bank_routing_number_masked && :bank_account_number_masked</tt> -- (CONDITIONAL - requied for electronic check refunds is :customer_profile_id AND :customer_payment_profile_id are missing) (NOT ABLE TO TEST - I keep getting "ACH transactions are not accepted by this merchant." when trying to make a payment and, until that's possible I can't refund (wiseleyb@gmail.com))
@@ -463,6 +465,11 @@ module ActiveMerchant #:nodoc:
           # Merchant-assigned reference ID for the request
           xml.tag!('refId', options[:ref_id]) if options[:ref_id]
           send("build_#{action}_request", xml, options)
+          if options[:extra_options]
+            xml.tag!('extraOptions') do
+              xml.cdata!(options[:extra_options])
+            end
+          end
         end
       end
 
