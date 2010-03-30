@@ -47,7 +47,7 @@ class AuthorizeNetCimTest < Test::Unit::TestCase
     end
   end
 
-  def test_successful_profile_create_get_update_and_delete
+  def test_successful_profile_create_get_update_list_and_delete
     assert response = @gateway.create_customer_profile(@options)
     @customer_profile_id = response.authorization
 
@@ -76,6 +76,11 @@ class AuthorizeNetCimTest < Test::Unit::TestCase
     assert_nil response.params['profile']['merchant_customer_id']
     assert_nil response.params['profile']['description']
     assert_equal 'new email address', response.params['profile']['email']
+    
+    assert response = @gateway.get_customer_profile_ids
+    assert response.test?
+    assert_success response
+    assert_equal @customer_profile_id, response.params['ids']['numeric_string']
   end
 
   def test_successful_create_customer_profile_transaction_auth_only_and_then_capture_only_requests

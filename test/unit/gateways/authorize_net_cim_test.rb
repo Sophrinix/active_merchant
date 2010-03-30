@@ -48,6 +48,18 @@ class AuthorizeNetCimTest < Test::Unit::TestCase
     assert_equal '2013-11', @gateway.send(:expdate, credit_card('4111111111111111', :month => "11", :year => "2013"))
   end
   
+  def test_should_get_customer_profile_ids_request
+    @gateway.expects(:ssl_post).returns(successful_get_customer_profile_ids_response)
+    
+    assert response = @gateway.get_customer_profile_ids
+    assert_instance_of Response, response
+    assert_success response
+    
+    assert_equal 1, response.params["ids"].size
+    assert_equal @customer_profile_id, response.params["ids"]["numeric_string"]
+    assert_equal "Successful.", response.message
+  end
+  
   def test_should_create_customer_profile_request
     @gateway.expects(:ssl_post).returns(successful_create_customer_profile_response)
 
@@ -326,6 +338,27 @@ class AuthorizeNetCimTest < Test::Unit::TestCase
   end
 
   private
+  
+  def successful_get_customer_profile_ids_response
+    <<-XML
+    <?xml version="1.0" encoding="utf-8"?>
+    <getCustomerProfileIdsResponse 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+      xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
+      <messages>
+        <resultCode>Ok</resultCode>
+        <message>
+          <code>I00001</code>
+          <text>Successful.</text>
+        </message>
+      </messages>
+      <ids>
+        <numericString>#{@customer_profile_id}</numericString>
+      </ids>
+    </getCustomerProfileIdsResponse>
+    XML
+  end
   
   def successful_create_customer_profile_response
     <<-XML

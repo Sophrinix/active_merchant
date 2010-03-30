@@ -35,6 +35,7 @@ module ActiveMerchant #:nodoc:
       AUTHORIZE_NET_CIM_NAMESPACE = 'AnetApi/xml/v1/schema/AnetApiSchema.xsd'
 
       CIM_ACTIONS = {
+        :get_customer_profile_ids => 'getCustomerProfileIds',
         :create_customer_profile => 'createCustomerProfile',
         :create_customer_payment_profile => 'createCustomerPaymentProfile',
         :create_customer_shipping_address => 'createCustomerShippingAddress',
@@ -94,6 +95,17 @@ module ActiveMerchant #:nodoc:
         requires!(options, :login, :password)
         @options = options
         super
+      end
+      
+      # Retrieves a list of all Customer Profile IDs from the gateway
+      #
+      # The response's params["ids"] contains the list of Customer Profile IDs
+      #
+      # ==== Options - none
+      # 
+      def get_customer_profile_ids
+        request = build_request(:get_customer_profile_ids)
+        commit(:get_customer_profile_ids, request)
       end
 
       # Creates a new customer profile along with any customer payment profiles and customer shipping addresses
@@ -367,6 +379,9 @@ module ActiveMerchant #:nodoc:
           xml.tag!('transactionKey', @options[:password])
         end
       end
+      
+      # The get customer profile IDs request does not need any additional XML
+      def build_get_customer_profile_ids_request(xml, options) end
       
       def build_create_customer_profile_request(xml, options)
         add_profile(xml, options[:profile])
